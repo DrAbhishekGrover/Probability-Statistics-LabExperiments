@@ -1,0 +1,101 @@
+---
+title: "Experiment 1"
+output: html_notebook
+---
+
+```{r}
+x=rbinom(1,1,0.6)
+print(x)
+y=dbinom(1,1,0.6)
+print(y)
+p=0.6
+prob=c(1-p,p)
+#print(z)
+x_values=c(0,1)
+plot(x_values,prob,type='h',xlim=c(0,2),ylim=c(0,1))
+```
+
+```{r}
+x=rbinom(1,50,0.6)
+print(x)
+n=50
+outcomes=0:n
+rv=vector("numeric",length=51)
+for(i in outcomes){
+  rv[i+1]=dbinom(i,50,0.6)
+}
+plot(outcomes,rv,type='h',xlim=c(0,n+1),ylim=c(0,0.2))
+```
+
+```{r}
+moment_ans=function(q){
+  s=0
+  for(i in outcomes){
+    s=s+(i^q)*rv[i+1]
+  }
+  return(s)
+}
+print(moment_ans(1))#Mean
+mvar=moment_ans(2)-((moment_ans(1))^2)
+print(mvar)
+```
+
+```{r}
+Ti=5
+t=0.01
+n=Ti/t
+outcomes=0:n
+rv=vector("numeric",length=n+1)
+for(i in outcomes){
+  rv[i+1]=dbinom(i,n,0.4)
+}
+moment_ans=function(q){
+  s=0
+  for(i in outcomes){
+    s=s+(i^q)*rv[i+1]
+  }
+  return(s)
+}
+mmean=moment_ans(1)#Mean
+mvar=moment_ans(2)-((moment_ans(1))^2)
+print(mmean)
+print(mvar)
+```
+
+```{r}
+lambda1=30
+x=rpois(1,lambda1)
+rv2=vector("numeric",length = n+1)
+for(i in outcomes){
+  rv2[i+1]=dpois(i,lambda = lambda1)
+}
+plot(outcomes,rv2,type='h',xlim=c(0,n+1),ylim=c(0,0.2))
+```
+
+```{r}
+e=vector("numeric",length=10000)
+nc=10:10009
+for(n in nc){
+  outcomes=0:n
+  rv=vector("numeric",length=n+1)
+  for(i in outcomes){
+    rv[i+1]=dbinom(i,n,0.6)
+  }
+  moment_ans=function(q){
+    s=0
+    for(i in outcomes){
+      s=s+(i^q)*rv[i+1]
+    }
+    return(s)
+  }
+  mmean=moment_ans(1)#Mean
+  lambda1=mmean
+  x=rpois(1,lambda1)
+  rv2=vector("numeric",length = n+1)
+  for(i in outcomes){
+    rv2[i+1]=dpois(i,lambda = lambda1)
+  }
+  e[n-9]=mean(abs(rv-rv2))
+}
+plot(nc,e,type='l')
+```
