@@ -1,0 +1,167 @@
+---
+title: "thirdlab3"
+output: html_document
+date: "2025-10-11"
+---
+
+```{r}
+library(MASS)
+data(epil)
+ndata=epil
+#| Variable  | Description                             |
+#| --------- | --------------------------------------- |
+#| `y`       | seizure count in a 2-week period        |
+#| `treat`   | treatment (placebo or progabide)        |
+#| `base`    | baseline seizure count before treatment |
+#| `age`     | patient age                             |
+#| `period`  | observation period (1–4)                |
+#| `subject` | patient ID                              |
+#| `trt`     | alternative treatment code              |
+#| 'lbase'.  | log transformed and normalize.          |
+#| 'lage'.   | log transformed and normalize.          |
+#| 'V4'.     | Count of seizures during 4th period.    |
+```
+
+```{r}
+Y=ndata[,1]
+hist(Y,breaks=40,freq=TRUE)#Default is freq=TRUE
+```
+
+```{r}
+breaks = seq(min(Y) - 0.5, max(Y) + 0.5, by = 1)
+h=hist(Y,breaks = breaks,freq=FALSE,main="PMF of Y")
+```
+
+```{r}
+my=mean(Y)
+mv=var(Y)
+k=0:max(Y)
+fitpois=fitdistr(Y,densfun = "poisson")
+pois_pmf=dpois(k,lambda = fitpois$estimate)
+hist(Y,breaks = breaks,freq=FALSE,ylim=c(0,0.2),main="PMF of Y")
+#points(k,pois_pmf,pch=1)
+lines(k,pois_pmf,lwd=1,col='red')
+print(fitpois$estimate)
+```
+
+```{r}
+fitnbinom=fitdistr(Y,densfun = "Negative Binomial")
+nbinom_pmf=dnbinom(k,size=fitnbinom$estimate[1],mu=fitnbinom$estimate[2])
+hist(Y,breaks = breaks,freq=FALSE,ylim=c(0,0.2),main="PMF of Y")
+lines(k,nbinom_pmf,lwd=1,col='red')
+```
+
+```{r}
+sprintf("Poisson:Log Likelihood:%f",fitpois$loglik)
+sprintf("Negative Binomial:Log Likelihood:%f",fitnbinom$loglik)
+```
+
+```{r}
+nr=nrow(ndata)
+s=sample(x=1:nr,size=0.8*nr,replace = FALSE)
+traindata=ndata[s,]
+testdata=ndata[-s,]
+linearmod=lm(y~lbase+lage+trt,data=traindata)
+#Observe: R automatically converts categorical variables to indicator variables
+ytrainpred=predict(linearmod,traindata)
+ytestpred=predict(linearmod,testdata)
+maetrain=mean(abs(traindata[,1]-ytrainpred))
+rmsetrain=sqrt(mean((traindata[,1]-ytrainpred)^2))
+maetest=mean(abs(testdata[,1]-ytestpred))
+rmsetest=sqrt(mean((testdata[,1]-ytestpred)^2))
+sprintf("Train MAE:%f",maetrain)
+sprintf("Train RMSE:%f",rmsetrain)
+sprintf("Test MAE:%f",maetest)
+sprintf("Test RMSE:%f",rmsetest)
+sprintf("Log Likelihood:%f",logLik(linearmod))
+```
+
+```{r}
+poissonlossmod=glm(y~lbase+lage+trt,family="poisson",data=traindata)
+ytrainpred=predict(poissonlossmod,traindata)
+ytestpred=predict(poissonlossmod,testdata)
+maetrain=mean(abs(traindata[,1]-ytrainpred))
+rmsetrain=sqrt(mean((traindata[,1]-ytrainpred)^2))
+maetest=mean(abs(testdata[,1]-ytestpred))
+rmsetest=sqrt(mean((testdata[,1]-ytestpred)^2))
+sprintf("Train MAE:%f",maetrain)
+sprintf("Train RMSE:%f",rmsetrain)
+sprintf("Test MAE:%f",maetest)
+sprintf("Test RMSE:%f",rmsetest)
+sprintf("Log Likelihood:%f",logLik(poissonlossmod))
+```
+
+```{r}
+nblossmod=glm.nb(y~lbase+lage+trt,data=traindata)
+ytrainpred=predict(nblossmod,traindata)
+ytestpred=predict(nblossmod,testdata)
+maetrain=mean(abs(traindata[,1]-ytrainpred))
+rmsetrain=sqrt(mean((traindata[,1]-ytrainpred)^2))
+maetest=mean(abs(testdata[,1]-ytestpred))
+rmsetest=sqrt(mean((testdata[,1]-ytestpred)^2))
+sprintf("Train MAE:%f",maetrain)
+sprintf("Train RMSE:%f",rmsetrain)
+sprintf("Test MAE:%f",maetest)
+sprintf("Test RMSE:%f",rmsetest)
+sprintf("Log Likelihood:%f",logLik(nblossmod))
+```
+
+```{r}
+z=log1p(Y)
+ndata2=cbind(z,ndata)
+```
+
+```{r}
+nr=nrow(ndata2)
+s=sample(x=1:nr,size=0.8*nr,replace = FALSE)
+traindata=ndata2[s,]
+testdata=ndata2[-s,]
+linearmod=lm(z~lbase+lage+trt,data=traindata)
+tytrainpred=predict(linearmod,traindata)
+tytestpred=predict(linearmod,testdata)
+ytrainpred=exp(tytrainpred)-1
+ytestpred=exp(tytestpred)-1
+maetrain=mean(abs(traindata[,2]-ytrainpred))
+rmsetrain=sqrt(mean((traindata[,2]-ytrainpred)^2))
+maetest=mean(abs(testdata[,2]-ytestpred))
+rmsetest=sqrt(mean((testdata[,2]-ytestpred)^2))
+sprintf("Train MAE:%f",maetrain)
+sprintf("Train RMSE:%f",rmsetrain)
+sprintf("Test MAE:%f",maetest)
+sprintf("Test RMSE:%f",rmsetest)
+sprintf("Log Likelihood:%f",logLik(linearmod))
+```
+
+```{r}
+poissonlossmod=glm(z~lbase+lage+trt,family="quasipoisson",data=traindata)
+tytrainpred=predict(poissonlossmod,traindata)
+tytestpred=predict(poissonlossmod,testdata)
+ytrainpred=exp(tytrainpred)-1
+ytestpred=exp(tytestpred)-1
+maetrain=mean(abs(traindata[,2]-ytrainpred))
+rmsetrain=sqrt(mean((traindata[,2]-ytrainpred)^2))
+maetest=mean(abs(testdata[,2]-ytestpred))
+rmsetest=sqrt(mean((testdata[,2]-ytestpred)^2))
+sprintf("Train MAE:%f",maetrain)
+sprintf("Train RMSE:%f",rmsetrain)
+sprintf("Test MAE:%f",maetest)
+sprintf("Test RMSE:%f",rmsetest)
+sprintf("Log Likelihood:%f",logLik(poissonlossmod))
+```
+
+```{r}
+nblossmod=suppressWarnings(glm.nb(z~lbase+lage+trt,data=traindata))
+tytrainpred=predict(nblossmod,traindata)
+tytestpred=predict(nblossmod,testdata)
+ytrainpred=exp(tytrainpred)-1
+ytestpred=exp(tytestpred)-1
+maetrain=mean(abs(traindata[,2]-ytrainpred))
+rmsetrain=sqrt(mean((traindata[,2]-ytrainpred)^2))
+maetest=mean(abs(testdata[,2]-ytestpred))
+rmsetest=sqrt(mean((testdata[,2]-ytestpred)^2))
+sprintf("Train MAE:%f",maetrain)
+sprintf("Train RMSE:%f",rmsetrain)
+sprintf("Test MAE:%f",maetest)
+sprintf("Test RMSE:%f",rmsetest)
+sprintf("Log Likelihood:%f",logLik(nblossmod))
+```
