@@ -1,0 +1,199 @@
+---
+title: "fifthlab2"
+output: html_document
+date: "2025-11-02"
+---
+
+```{r}
+ntrials=10000
+nsamples=100
+mx=numeric(ntrials)
+for(i in 1:ntrials){
+  x=numeric(nsamples)
+  for(j in 1:nsamples){
+    x[j]=runif(1,min=0,max=5)
+  }
+  mx[i]=mean(x)
+}
+k=seq(min(mx),max(mx),by=0.001)
+gpdf=dnorm(k,mean=mean(mx),sd=sd(mx))
+hist(mx,breaks=40,freq=FALSE)
+lines(k,gpdf,col="red")
+```
+
+```{r}
+ntrials=10000
+nsamples=100
+mx=numeric(ntrials)
+for(i in 1:ntrials){
+  x=numeric(nsamples)
+  for(j in 1:nsamples){
+    x[j]=rexp(1,rate=5)
+  }
+  mx[i]=mean(x)
+}
+k=seq(min(mx),max(mx),by=0.001)
+gpdf=dnorm(k,mean=mean(mx),sd=sd(mx))
+hist(mx,breaks=40,freq=FALSE)
+lines(k,gpdf,col="red")
+```
+
+```{r}
+ntrials=10000
+nsamples=100
+mx=numeric(ntrials)
+for(i in 1:ntrials){
+  x=numeric(nsamples)
+  for(j in 1:nsamples){
+    x[j]=rnorm(1,mean=0,sd=5)
+  }
+  mx[i]=mean(x)
+}
+k=seq(min(mx),max(mx),by=0.001)
+gpdf=dnorm(k,mean=mean(mx),sd=sd(mx))
+hist(mx,breaks=40,freq=FALSE)
+lines(k,gpdf,col="red")
+```
+
+```{r}
+ntrials=10000
+nsamples=100
+mx=numeric(ntrials)
+for(i in 1:ntrials){
+  x=numeric(nsamples)
+  for(j in 1:nsamples){
+    s=sample(1:3,size=1)
+    if(s==1){
+     x[j]=runif(1,min=0,max=5)
+    }else if(s==2){
+     x[j]=rexp(1,rate=5)
+    }else{
+     x[j]=rnorm(1,mean=0,sd=5) 
+    }
+  }
+  mx[i]=mean(x)
+}
+k=seq(min(mx),max(mx),by=0.001)
+gpdf=dnorm(k,mean=mean(mx),sd=sd(mx))
+hist(mx,breaks=40,freq=FALSE)
+lines(k,gpdf,col="red")
+```
+
+```{r}
+a=1.2
+b=2.1
+x=seq(1,5,by=0.01)
+y=numeric(length(x))
+for(i in 1:length(x)){
+y[i]=a+b*x[i]+rnorm(1,mean=0,sd=2)
+}
+plot(x,y)
+```
+
+```{r}
+train=as.data.frame(cbind(x,y))
+mymod=lm(y~x,data=train)
+ypred=predict(mymod,data=train)
+me=mean(y-ypred)
+ea=mymod$coefficients[1]
+eb=mymod$coefficients[2]
+```
+
+```{r}
+ntrials=1000
+me=numeric(ntrials)
+ea=numeric(ntrials)
+eb=numeric(ntrials)
+for(j in 1:ntrials){
+a=1.2
+b=2.1
+x=seq(1,5,by=0.01)
+y=numeric(length(x))
+for(i in 1:length(x)){
+y[i]=a+b*x[i]+rnorm(1,mean=0,sd=2)
+}
+train=as.data.frame(cbind(x,y))
+mymod=lm(y~x,data=train)
+ypred=predict(mymod,data=train)
+me[j]=mean(y-ypred)
+ea[j]=mymod$coefficients[1]
+eb[j]=mymod$coefficients[2]
+}
+```
+
+```{r}
+library(moments)
+k=seq(min(me),max(me),by=1e-17)
+gpdf=dnorm(k,mean=mean(me),sd=sd(me))
+hist(me,breaks = 40,freq=FALSE)
+lines(k,gpdf,col="red")
+sprintf("skewness:%f",skewness(me))
+sprintf("kurtosis:%f",kurtosis(me))
+```
+
+```{r}
+k=seq(min(ea),max(ea),by=1e-4)
+gpdf=dnorm(k,mean=mean(ea),sd=sd(ea))
+hist(ea,breaks = 40,freq=FALSE)
+lines(k,gpdf,col="red")
+sprintf("skewness:%f",skewness(ea))
+sprintf("kurtosis:%f",kurtosis(ea))
+```
+
+```{r}
+k=seq(min(eb),max(eb),by=1e-4)
+gpdf=dnorm(k,mean=mean(eb),sd=sd(eb))
+hist(eb,breaks = 40,freq=FALSE)
+lines(k,gpdf,col="red")
+sprintf("skewness:%f",skewness(eb))
+sprintf("kurtosis:%f",kurtosis(eb))
+```
+
+```{r}
+ntrials=1000
+me=numeric(ntrials)
+ea=numeric(ntrials)
+eb=numeric(ntrials)
+for(j in 1:ntrials){
+a=1.2
+b=2.1
+x=seq(1,5,by=0.01)
+y=numeric(length(x))
+for(i in 1:length(x)){
+y[i]=a+b*x[i]+rt(1,df=3)
+}
+train=as.data.frame(cbind(x,y))
+mymod=lm(y~x,data=train)
+ypred=predict(mymod,data=train)
+me[j]=mean(y-ypred)
+ea[j]=mymod$coefficients[1]
+eb[j]=mymod$coefficients[2]
+}
+```
+
+```{r}
+k=seq(min(me),max(me),by=1e-17)
+gpdf=dnorm(k,mean=mean(me),sd=sd(me))
+hist(me,breaks = 40,freq=FALSE)
+lines(k,gpdf,col="red")
+sprintf("skewness:%f",skewness(me))
+sprintf("kurtosis:%f",kurtosis(me))
+```
+
+```{r}
+k=seq(min(ea),max(ea),by=1e-4)
+gpdf=dnorm(k,mean=mean(ea),sd=sd(ea))
+hist(ea,breaks = 40,freq=FALSE)
+lines(k,gpdf,col="red")
+sprintf("skewness:%f",skewness(ea))
+sprintf("kurtosis:%f",kurtosis(ea))
+```
+
+```{r}
+k=seq(min(eb),max(eb),by=1e-4)
+gpdf=dnorm(k,mean=mean(eb),sd=sd(eb))
+hist(eb,breaks = 40,freq=FALSE)
+lines(k,gpdf,col="red")
+sprintf("skewness:%f",skewness(eb))
+sprintf("kurtosis:%f",kurtosis(eb))
+```
