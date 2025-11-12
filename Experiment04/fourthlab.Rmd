@@ -1,0 +1,144 @@
+---
+title: "fourthlab"
+output: html_document
+date: "2025-10-25"
+---
+
+```{r}
+p=0.4
+n=10
+nsamples=10000
+samples=numeric(nsamples)
+for(i in 1:nsamples){
+  samples[i]=rbinom(1,size=n,p=p)
+}
+x=samples
+y=scale(x)
+k=seq(min(y),max(y),by=0.01)
+gpmf=dnorm(k,mean = mean(y),sd=sd(y))
+hist(y,breaks=40,freq=FALSE)
+lines(k,gpmf,lwd=1,col="red")
+```
+
+```{r}
+p=0.4
+n=50
+nsamples=10000
+samples=numeric(nsamples)
+for(i in 1:nsamples){
+  samples[i]=rbinom(1,size=n,p=p)
+}
+x=samples
+y=scale(x)
+k=seq(min(y),max(y),by=0.01)
+gpmf=dnorm(k,mean = mean(y),sd=sd(y))
+hist(y,breaks=40,freq=FALSE)
+lines(k,gpmf,lwd=1,col="red")
+```
+
+```{r}
+p=0.4
+n=100
+nsamples=10000
+samples=numeric(nsamples)
+for(i in 1:nsamples){
+  samples[i]=rbinom(1,size=n,p=p)
+}
+x=samples
+y=scale(x)
+k=seq(min(y),max(y),by=0.01)
+gpmf=dnorm(k,mean = mean(y),sd=sd(y))
+hist(y,breaks=40,freq=FALSE)
+lines(k,gpmf,lwd=1,col="red")
+```
+
+```{r}
+p=0.4
+n=500
+nsamples=10000
+samples=numeric(nsamples)
+for(i in 1:nsamples){
+  samples[i]=rbinom(1,size=n,p=p)
+}
+x=samples
+y=scale(x)
+k=seq(min(y),max(y),by=0.01)
+gpmf=dnorm(k,mean = mean(y),sd=sd(y))
+hist(y,breaks=40,freq=FALSE)
+lines(k,gpmf,lwd=1,col="red")
+```
+
+```{r}
+library(MASS)
+df=read.csv("bikerental.csv")[,2:13]
+Y=df[,12]
+Z=scale(Y)
+k=seq(min(Z),max(Z),by=0.01)
+fit_norm=fitdistr(Z,densfun = "normal")
+gpdf=dnorm(k,mean=fit_norm$estimate[1],sd=fit_norm$estimate[2])
+hist(Z,breaks = 40,freq=FALSE,main="Density Histogram")
+lines(k,gpdf,col="red")
+```
+
+```{r}
+X=df[,1:11]
+Xs=as.data.frame(scale(X))
+mcor=numeric(11)
+for (i in 1:11){
+  mcor[i]=abs(cor(Xs[,i],Z))
+}
+si=order(mcor,decreasing=TRUE)
+st=si[1:2]
+```
+
+```{r}
+Xn=Xs[,st]
+ndata=cbind(Xn,Z)
+nr=nrow(ndata)
+s=sample(x=1:nr,size=0.8*nr,replace = FALSE)
+traindata=ndata[s,]
+testdata=ndata[-s,]
+mymod=lm(Z~.,data=traindata)
+ytrainpred=predict(mymod,traindata)
+ytestpred=predict(mymod,testdata)
+trainmae=mean(abs(traindata[,3]-ytrainpred))
+testmae=mean(abs(testdata[,3]-ytestpred))
+sprintf("Train MAE:%f",trainmae)
+sprintf("Test MAE:%f",testmae)
+```
+
+```{r}
+e=traindata[,3]-ytrainpred
+emy=mean(e)
+emsd=sd(e)
+ek=seq(min(e), max(e),by = 0.001)
+emd=dnorm(ek,mean=emy,sd=emsd)
+hist(e,breaks = 40,freq=FALSE,main="Density Histogram")
+lines(ek,emd,lwd=1,col='red')
+```
+
+```{r}
+k=0
+trainmae=numeric(55)
+testmae=numeric(55)
+for(i in 1:10){
+  t=i+1
+  for(j in t:11){
+st=c(i,j)      
+Xn=Xs[,st]
+ndata=cbind(Xn,Z)
+nr=nrow(ndata)
+s=sample(x=1:nr,size=0.8*nr,replace = FALSE)
+traindata=ndata[s,]
+testdata=ndata[-s,]
+mymod=lm(Z~.,data=traindata)
+ytrainpred=predict(mymod,traindata)
+ytestpred=predict(mymod,testdata)
+k=k+1
+trainmae[k]=mean(abs(traindata[,3]-ytrainpred))
+testmae[k]=mean(abs(testdata[,3]-ytestpred))
+  }
+}
+print(trainmae)
+print(testmae)
+```
